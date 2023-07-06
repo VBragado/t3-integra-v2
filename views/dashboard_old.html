@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Dashboard Analytics</title>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap">
+	<style>
+		body {
+			font-family: "Roboto", sans-serif;
+			background-color: #15202b;
+			color: #fff;
+			padding: 0;
+			margin: 0;
+		}
+		.container {
+			max-width: 1200px;
+			margin: 0 auto;
+			padding: 30px;
+		}
+		h1 {
+			font-size: 36px;
+			margin: 0 0 20px;
+			text-align: center;
+			color: #fff;
+		}
+		h2 {
+			font-size: 24px;
+			margin: 0 0 10px;
+			color: #8899a6;
+		}
+		table {
+			border-collapse: collapse;
+			width: 100%;
+			margin-bottom: 20px;
+			font-size: 16px;
+			line-height: 1.5;
+			background-color: #192734;
+		}
+		table th, table td {
+			padding: 10px;
+			border: 1px solid #8899a6;
+		}
+		table th {
+			background-color: #253341;
+			font-weight: bold;
+			text-align: left;
+		}
+		.histogram, .pie-chart {
+			height: 400px;
+			margin-bottom: 20px;
+			background-color: #192734;
+		}
+		.histogram canvas, .pie-chart canvas {
+			height: 100%;
+			width: 100%;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>Dashboard Analytics</h1>
+
+		<div class="row">
+			<div class="col">
+				<h2>Number of Operations</h2>
+				<p><!-- insert number of operations here --></p>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col">
+				<h2>Last 100 Operations</h2>
+				<table>
+					<thead>
+						<tr>
+							<th>Date</th>
+							<th>Operation</th>
+							<th>Status</th>
+						</tr>
+					</thead>
+					<tbody>
+						<!-- insert table rows with data here -->
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col">
+				<h2>Histogram</h2>
+				<div class="histogram">
+					<canvas id="histogram-chart"></canvas>
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col">
+				<h2>Pie Chart</h2>
+				<div class="pie-chart">
+					<canvas id="pie-chart"></canvas>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<!-- import chart libraries and scripts here -->
+

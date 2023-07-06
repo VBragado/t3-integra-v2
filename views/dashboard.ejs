@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Dashboard Analytics</title>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap">
+	<style>
+		body {
+			font-family: "Roboto", sans-serif;
+			background-color: #15202b;
+			color: #fff;
+			padding: 0;
+			margin: 0;
+		}
+		.container {
+			max-width: 1200px;
+			margin: 0 auto;
+			padding: 30px;
+		}
+		h1 {
+			font-size: 36px;
+			margin: 0 0 20px;
+			text-align: center;
+			color: #fff;
+		}
+		h2 {
+			font-size: 24px;
+			margin: 0 0 10px;
+			color: #8899a6;
+		}
+		table {
+			border-collapse: collapse;
+			width: 100%;
+			margin-bottom: 20px;
+			font-size: 16px;
+			line-height: 1.5;
+			background-color: #192734;
+		}
+		table th, table td {
+			padding: 10px;
+			border: 1px solid #8899a6;
+		}
+		table th {
+			background-color: #253341;
+			font-weight: bold;
+			text-align: left;
+		}
+		.pie-chart {
+			height: 400px;
+			margin-bottom: 20px;
+			background-color: #192734;
+		}
+		.pie-chart canvas {
+			height: 100%;
+			width: 100%;
+		}
+    .histogram {
+    position: relative;
+    max-height: 600px;
+    width: 100%;
+    margin-bottom: 20px;
+    background-color: #192734;
+  }
+
+  .histogram-chart canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    
+  }
+        .filter-form {
+            margin-bottom: 20px;
+        }
+        .filter-form label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        .filter-form input[type="submit"] {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        
+	</style>
+</head>
+<body>
+	<div class="container">
+        <h1>Dashboard Analytics</h1>
+        
+        <!-- add the form for filters -->
+        <form class="filter-form" action="/dashboard" method="get">
+            <label for="banco_origen">Filter by Origin Bank: <%= banco_origen %> </label>
+            <select id="banco_origen" name="banco_origen">
+                <option value="">All Banks</option>
+                <% for (const bank of distinctOrigenBanks) { %>
+                    <option value="<%= bank.banco_origen %>"><%= bank.banco_origen %></option>
+                <% } %>
+            </select>
+            <label for="banco_destino">Filter by Destination Bank: <%= banco_destino %></label>
+            <select id="banco_destino" name="banco_destino">
+                <option value="">All Banks</option>
+                <% for (const bank of distinctDestinoBanks) { %>
+                    <option value="<%= bank.banco_destino %>"><%= bank.banco_destino %></option>
+                <% } %>
+            </select>
+
+
+            <label for="year">Year:</label>
+            <select id="year" name="year" onchange="selectYear()">
+                <option value="">All Years</option>
+                <% for (let i = 2020; i <= new Date().getFullYear(); i++) { %>
+                    <option value="<%= i %>"><%= i %></option>
+                <% } %>
+            </select>
+            
+            <label for="month">Month:</label>
+            <select id="month" name="month" disabled onchange="selectMonth()">
+                <option value="">All Months</option>
+                <% for (let i = 1; i <= 12; i++) { %>
+                    <option value="<%= i %>"><%= i %></option>
+                <% } %>
+            </select>
+            
+            <label for="day">Day:</label>
+            <select id="day" name="day" disabled>
+                <option value="">All Days</option>
+                <% for (let i = 1; i <= 31; i++) { %>
+                    <option value="<%= i %>"><%= i %></option>
+                <% } %>
+            </select>
+            
+            <button type="submit">Apply Filter</button>
+            <button type="button" onclick="resetDateFilter()">All Dates</button>
+
+        </form>
+
+          <div class="row">
+              <div class="col">
+                  <h2>Number of Operations</h2>
+                  <p><%= totalOperaciones %></p>
+                </div>
+          </div>
+
+          <div class="row">
+            <div class="col">
+                <h2>Envío de fondos</h2>
+                <p><%= totalOperaciones_2200 %> operaciones</p>
+                <p>$<%= montoOperaciones_2200 %></p>
+              </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+              <h2>Reversa de Transacción</h2>
+              <p><%= totalOperaciones_2400 %> operaciones</p>
+              <p>$<%= montoOperaciones_2400 %></p>
+            </div>
+      </div>
+  
+          <div class="row">
+            <div class="col">
+              <h2>Last 100 Operations</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Operación</th>
+                    <th>Banco Origen</th>
+                    <th>Cuenta Origen</th>
+                    <th>Banco Destino</th>
+                    <th>Cuenta Destino</th>
+                    <th>Monto</th>
+                    <th>Fecha</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% transactions.forEach(transaction => { %>
+                  <tr>
+                    <td><%= transaction.id_mensaje %></td>
+                    <td><%= transaction.operacion %></td>
+                    <td><%= transaction.banco_origen %></td>
+                    <td><%= transaction.cuenta_origen %></td>
+                    <td><%= transaction.banco_destino %></td>
+                    <td><%= transaction.cuenta_destino %></td>
+                    <td><%= transaction.monto %></td>
+                    <td><%= transaction.publishtime.toISOString() %></td>
+                  </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+  
+          <div class="row">
+              <div class="col">
+                  <h2>Histogram</h2>
+                  <div class="histogram">
+                      <canvas id="histogram-chart"></canvas>
+                  </div>
+              </div>
+          </div>
+  
+
+          <div class="row">
+            <div class="col">
+                <h2>Conciliacion Bancaria</h2>
+                <p>Banco <%= banco_origen %>: $<%= conciliacion %></p>
+                <p>Banco <%= banco_destino %>: $<%= conciliacion_inversa %></p>
+              </div>
+        </div>
+  
+      </div>
+
+      <script src="https://cdn.jsdelivr.net/npm/chart.js@3.6.0"></script>
+      
+      <script>
+        const histogramData = <%- JSON.stringify(histogramData.map(transaction => ({
+          range: transaction.dataValues.amountCategory,
+          count: parseInt(transaction.dataValues.transactionCount)
+        }))) %>;
+      
+        const allRanges = ['Under 10000', '10000 - 49999', '50000 - 99999', '100000 - 499999', '500000 - 999999', '1000000 - 9999999', 'Over 9999999']; // Replace with your actual ranges
+        const labels = allRanges;
+        const counts = allRanges.map(range => {
+          const data = histogramData.find(transaction => transaction.range === range);
+          return data ? data.count : 0;
+        });
+      
+        const histogramChart = new Chart(document.getElementById('histogram-chart'), {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Transaction Count',
+                data: counts,
+                backgroundColor: '#3498db',
+              },
+            ],
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true,
+                stepSize: 1,
+              },
+            },
+          },
+        });
+      </script>
+    
+    <script>
+      function selectYear() {
+          const yearSelect = document.getElementById("year");
+          const monthSelect = document.getElementById("month");
+          const daySelect = document.getElementById("day");
+          
+          if (yearSelect.value !== "") {
+              monthSelect.disabled = false;
+          } else {
+              monthSelect.disabled = true;
+              daySelect.disabled = true;
+          }
+          
+          // Reset month and day selects
+          monthSelect.value = "";
+          daySelect.value = "";
+      }
+      
+      function selectMonth() {
+          const monthSelect = document.getElementById("month");
+          const daySelect = document.getElementById("day");
+          
+          if (monthSelect.value !== "") {
+              daySelect.disabled = false;
+          } else {
+              daySelect.disabled = true;
+          }
+          
+          // Reset day select
+          daySelect.value = "";
+      }
+      
+      function resetDateFilter() {
+          const yearSelect = document.getElementById("year");
+          const monthSelect = document.getElementById("month");
+          const daySelect = document.getElementById("day");
+          
+          yearSelect.value = "";
+          monthSelect.value = "";
+          daySelect.value = "";
+          
+          monthSelect.disabled = true;
+          daySelect.disabled = true;
+      }
+  </script>
+  
+      
+
+<!--
+      <script>
+        // Access the histogram data passed from the controller
+        const histogramData = <%- JSON.stringify(histogramData) %>;
+      
+        // Extract the labels and counts from the histogram data
+        const labels = histogramData.map(data => data.range);
+        const counts = histogramData.map(data => data.count);
+      
+        // Create the histogram chart
+        const histogramChart = new Chart(document.getElementById('histogram-chart'), {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Transaction Count',
+                data: counts,
+                backgroundColor: '#3498db',
+              },
+            ],
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true,
+                stepSize: 1,
+              },
+            },
+          },
+        });
+      </script>
+
+</body>
+-->
+
+<!-- Add the following script at the bottom 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const histogramData = <%= JSON.stringify(histogramData) %>;
+
+    const chartData = {
+      labels: ["Under 10000", "10000 - 49999", "Over 50000"],
+      datasets: [],
+    };
+
+    // Prepare the dataset for each bank combination
+    const banks = new Set();
+    histogramData.forEach((data) => {
+      banks.add(data.banco_origen);
+    });
+
+    banks.forEach((bank) => {
+      const dataset = {
+        label: bank,
+        backgroundColor: randomColor(),
+        data: [],
+      };
+
+      const bankData = histogramData.filter((data) => data.banco_origen === bank);
+      bankData.forEach((data) => {
+        const categoryIndex = chartData.labels.indexOf(data.amountCategory);
+        dataset.data[categoryIndex] = data.transactionCount;
+      });
+
+      chartData.datasets.push(dataset);
+    });
+
+    // Generate random color
+    function randomColor() {
+      const letters = "0123456789ABCDEF";
+      let color = "#";
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
+    // Render the chart
+    const ctx = document.getElementById("histogram-chart").getContext("2d");
+    new Chart(ctx, {
+      type: "bar",
+      data: chartData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            grid: {
+              display: false,
+            },
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              precision: 0,
+            },
+          },
+        },
+      },
+    });
+  });
+</script>
+-->
